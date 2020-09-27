@@ -32,15 +32,17 @@ public class DbClient
     static final String SQL_QUERY_COUNT_NODES = 
             "SELECT COUNT(1) "
             + "FROM alf_node AN "
-            + "WHERE AN.store_id = %s "
-            + "AND NOT EXISTS (select alf_node_properties.node_id "
-            + "  from alf_node_properties, alf_qname, alf_namespace " 
-            + "  where alf_node_properties.node_id = AN.id "
-            + "  and alf_node_properties.qname_id = alf_qname.id " 
-            + "  and alf_qname.ns_id = alf_namespace.id "
-            + "  and NOT alf_node_properties.boolean_value " 
-            + "  and alf_qname.local_name = 'isIndexed' "
-            + "  and alf_namespace.uri = 'http://www.alfresco.org/model/content/1.0')";
+            + "WHERE AN.store_id = %s";
+    static final String SQL_QUERY_COUNT_UNINDEXED_NODES = 
+            "SELECT COUNT(1) "
+            + "FROM alf_node, alf_node_properties, alf_qname, alf_namespace " 
+            + "WHERE alf_node_properties.node_id = alf_node.id "
+            + "  AND alf_node.store_id = %s "
+            + "  AND alf_node_properties.qname_id = alf_qname.id " 
+            + "  AND alf_qname.ns_id = alf_namespace.id "
+            + "  AND NOT alf_node_properties.boolean_value " 
+            + "  AND alf_qname.local_name = 'isIndexed' "
+            + "  AND alf_namespace.uri = 'http://www.alfresco.org/model/content/1.0'";
     static final String SQL_QUERY_COUNT_DELETES = 
             "SELECT COUNT(1) " 
             + "FROM alf_node, alf_qname, alf_namespace "
@@ -52,6 +54,7 @@ public class DbClient
     public Integer getNodeCount(Integer storeId)
     {
         return jdbcTemplate.queryForObject(String.format(SQL_QUERY_COUNT_NODES, storeId), Integer.class)
+                - jdbcTemplate.queryForObject(String.format(SQL_QUERY_COUNT_UNINDEXED_NODES, storeId), Integer.class)
                 - jdbcTemplate.queryForObject(String.format(SQL_QUERY_COUNT_DELETES, storeId), Integer.class);
     }
     
@@ -63,13 +66,13 @@ public class DbClient
             + "  AND alf_qname.ns_id = alf_namespace.id " 
             + "  AND alf_qname.local_name = '%s' "
             + "  AND alf_namespace.uri = '%s'" 
-            + "  AND NOT EXISTS (select alf_node_properties.node_id\n"
-            + "    from alf_node_properties, alf_qname, alf_namespace\n"
-            + "    where alf_node_properties.node_id = AN.id\n"
-            + "    and alf_node_properties.qname_id = alf_qname.id\n" 
-            + "    and alf_qname.ns_id = alf_namespace.id\n"
-            + "    and NOT alf_node_properties.boolean_value\n" 
-            + "    and alf_qname.local_name = 'isIndexed'\n"
+            + "  AND NOT EXISTS (select alf_node_properties.node_id "
+            + "    from alf_node_properties, alf_qname, alf_namespace "
+            + "    where alf_node_properties.node_id = AN.id "
+            + "    and alf_node_properties.qname_id = alf_qname.id " 
+            + "    and alf_qname.ns_id = alf_namespace.id "
+            + "    and NOT alf_node_properties.boolean_value " 
+            + "    and alf_qname.local_name = 'isIndexed' "
             + "    and alf_namespace.uri = 'http://www.alfresco.org/model/content/1.0')";
     public Integer getCountByType(Integer storeId, String uri, String localName)
     {
