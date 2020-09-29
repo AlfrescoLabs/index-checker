@@ -19,6 +19,14 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 solr.url=http://localhost:8983/solr
 ```
 
+This program validates the number of nodes and permissions in Alfresco Database and SOLR. Every validation can be enabled or disabled with the following properties (also available in [application.properties](src/main/resources/application.properties)):
+
+```
+# Validation options (true / false)
+validation.nodes=true
+validation.permissions=true
+```
+
 When the property `report.detailed` in this properties file is set to `true`, a list including the dbIds and the aclIds different in SOLR and Database is produced.
 
 ```
@@ -61,4 +69,12 @@ When using `report.detailed` option, additional details are provided.
 
 ```
 AclIds present in DB but missed in SOLR [15]
+```
+
+**Using parameters from command line**
+
+Values configured in [application.properties](src/main/resources/application.properties) can be overridden from command line using the following syntax.
+
+```
+$ java -jar target/index-checker-0.0.1-SNAPSHOT.jar --validation.nodes=false
 ```

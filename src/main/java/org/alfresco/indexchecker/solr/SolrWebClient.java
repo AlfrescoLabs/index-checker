@@ -1,7 +1,7 @@
 package org.alfresco.indexchecker.solr;
 
-import org.alfresco.indexchecker.NodesComparator;
-import org.alfresco.indexchecker.PermissionsComparator;
+import org.alfresco.indexchecker.NodesCountComparator;
+import org.alfresco.indexchecker.PermissionsCountComparator;
 import org.alfresco.indexchecker.solr.bean.FacetResponse;
 import org.alfresco.indexchecker.solr.bean.SearchResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,7 +60,7 @@ public class SolrWebClient
                 .uri(builder -> builder.path("/" + core + "/select")
                         .queryParam("q", "{query}")
                         .queryParam("start", minDbId)
-                        .queryParam("rows", NodesComparator.BATCH_SIZE)
+                        .queryParam("rows", NodesCountComparator.BATCH_SIZE)
                         .queryParam("sort", "DBID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=TYPE}" + type))
@@ -99,7 +99,7 @@ public class SolrWebClient
                         .queryParam("q", "{query}")
                         .queryParam("fl", "{cached}")
                         .queryParam("start", minAclId)
-                        .queryParam("rows", PermissionsComparator.BATCH_SIZE)
+                        .queryParam("rows", PermissionsCountComparator.BATCH_SIZE)
                         .queryParam("sort", "ACLID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=DOC_TYPE}Acl", "[cached]ACLID, id, _version_"))

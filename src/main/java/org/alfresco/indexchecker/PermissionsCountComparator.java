@@ -13,13 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Compare node existence in SOLR and Alfresco DB.
+ * Compare permission existence in SOLR and Alfresco DB.
  */
 @Service
-public class PermissionsComparator
+public class PermissionsCountComparator
 {
 
-    static final Logger LOG = LoggerFactory.getLogger(PermissionsComparator.class);
+    static final Logger LOG = LoggerFactory.getLogger(PermissionsCountComparator.class);
 
     /**
      * Number of SOLR Documents taken on every request to be compared with DB

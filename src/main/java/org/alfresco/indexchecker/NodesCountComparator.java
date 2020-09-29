@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
  * Compare node existence in SOLR and Alfresco DB.
  */
 @Service
-public class NodesComparator
+public class NodesCountComparator
 {
     
-    static final Logger LOG = LoggerFactory.getLogger(NodesComparator.class);
+    static final Logger LOG = LoggerFactory.getLogger(NodesCountComparator.class);
     
     /**
      * Number of SOLR Documents taken on every request to be compared with DB
