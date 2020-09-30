@@ -1,4 +1,4 @@
-package org.alfresco.indexchecker.solr.bean;
+package org.alfresco.indexchecker.solr.bean.response;
 
 public class FacetCounts
 {

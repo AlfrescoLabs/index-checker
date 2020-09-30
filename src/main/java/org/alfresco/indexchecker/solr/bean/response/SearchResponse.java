@@ -1,9 +1,9 @@
-package org.alfresco.indexchecker.solr.bean;
+package org.alfresco.indexchecker.solr.bean.response;
 
 /**
- * Root Jackson Bean to be used to unmarshall Facet Queries to SOLR.
+ * Root Jackson Bean to be used to unmarshall Search Queries to SOLR.
  */
-public class FacetResponse
+public class SearchResponse
 {
     public ResponseHeader responseHeader;
     public OriginalParameters _original_parameters_;
@@ -19,6 +19,5 @@ public class FacetResponse
     public long lastIndexedTxTime;
     public int txRemaining;
     public Response response;
-    public FacetCounts facet_counts;
     public boolean processedDenies;
 }

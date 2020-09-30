@@ -41,12 +41,16 @@ public class App implements CommandLineRunner
         
         if (env.getProperty("validation.nodes").equals("true"))
         {
-            nodesValidator.validate(env.getProperty("report.detailed").equals("true"));
+            nodesValidator.validate(
+                    env.getProperty("report.detailed").equals("true"),
+                    env.getProperty("run.fix.actions").equals("true"));
         }
         
         if (env.getProperty("validation.permissions").equals("true"))
         {
-            permissionsValidator.validate(env.getProperty("report.detailed").equals("true"));
+            permissionsValidator.validate(
+                    env.getProperty("report.detailed").equals("true"),
+                    env.getProperty("run.fix.actions").equals("true"));
         }
 
     }

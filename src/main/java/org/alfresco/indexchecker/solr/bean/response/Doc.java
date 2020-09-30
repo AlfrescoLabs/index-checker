@@ -1,4 +1,4 @@
-package org.alfresco.indexchecker.solr.bean;
+package org.alfresco.indexchecker.solr.bean.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -5,7 +5,7 @@ import java.util.Map;
 import org.alfresco.indexchecker.db.DbClient;
 import org.alfresco.indexchecker.solr.MappingTerms;
 import org.alfresco.indexchecker.solr.SolrWebClient;
-import org.alfresco.indexchecker.solr.bean.FacetResponse;
+import org.alfresco.indexchecker.solr.bean.response.FacetResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +37,10 @@ public class NodesValidator
     /**
      * Logs the number of nodes in Alfresco DB and SOLR.
      * Logs the difference in the number of nodes by Document TYPE.
-     * If detailed, logs the missing nodes in Alfresco DB or SOLR.
-     * @param detailed
+     * @param detailed, logs the missing nodes in Alfresco DB or SOLR.
+     * @param fix, apply fix actions to SOLR Index
      */
-    public void validate(boolean detailed) throws JsonMappingException, JsonProcessingException
+    public void validate(boolean detailed, boolean fix) throws JsonMappingException, JsonProcessingException
     {
         // Number of documents indexed by SOLR on a core by TYPE property
         FacetResponse solrTypesCount = solrWebClient.getDocumentCountByType(SolrWebClient.ALFRESCO_CORE_NAME);
@@ -73,7 +73,7 @@ public class NodesValidator
                 }
                 if (detailed)
                 {
-                    nodesCountComparator.logDetailedReport(alfrescoStoreId, k, uri, localName);
+                    nodesCountComparator.detailedValidation(alfrescoStoreId, k, uri, localName, fix);
                 }
             }
 

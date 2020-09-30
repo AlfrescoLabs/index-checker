@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 import org.alfresco.indexchecker.db.DbClient;
 import org.alfresco.indexchecker.solr.SolrWebClient;
-import org.alfresco.indexchecker.solr.bean.Doc;
-import org.alfresco.indexchecker.solr.bean.SearchResponse;
+import org.alfresco.indexchecker.solr.bean.response.Doc;
+import org.alfresco.indexchecker.solr.bean.response.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +34,9 @@ public class PermissionsCountComparator
 
     /**
      * Logs details for the comparing process between SOLR and Alfresco DB
+     * @param fix apply fix actions when "true"
      */
-    public void logDetailedReport()
+    public void detailedValidation(boolean fix)
     {
         // Max aclId in the database
         Integer maxDbAclId = dbClient.getMaxAclId();
@@ -79,6 +80,25 @@ public class PermissionsCountComparator
                 if (missingDbIds.size() > 0)
                 {
                     LOG.error("AclIds present in DB but missed in SOLR {}", missingDbIds);
+                    if (fix)
+                    {
+                        missingDbIds.parallelStream().forEach(aclId -> {
+                            LOG.debug("Reindexing document with ACLID {} in Solr Index", aclId);
+                            try
+                            {
+                                solrWebClient.reindexById(
+                                        SolrWebClient.ALFRESCO_CORE_NAME,
+                                        SolrWebClient.ACL_ID_PARAM_NAME,
+                                        aclId);
+                            }
+                            catch (Exception e)
+                            {
+                                LOG.error("Some error happened when reindexing Solr Document with DBID {}. Error message: ", aclId,
+                                        e.getMessage());
+                                e.printStackTrace();
+                            }
+                        });
+                    }
                 }
 
                 List<Integer> missingSolrIds = solrIds.stream().filter(solrId -> !dbIds.contains(solrId))
@@ -87,6 +107,25 @@ public class PermissionsCountComparator
                 if (missingSolrIds.size() > 0)
                 {
                     LOG.error("AclIds present in SOLR but missed in DB {}", missingSolrIds);
+                    if (fix)
+                    {
+                        missingSolrIds.parallelStream().forEach(aclId -> {
+                            LOG.debug("Deleting document with DBID {} from Solr Index", aclId);
+                            try
+                            {
+                                solrWebClient.deleteById(
+                                        SolrWebClient.ALFRESCO_CORE_NAME,
+                                        SolrWebClient.ACL_ID_FIELD_NAME, 
+                                        aclId);
+                            }
+                            catch (Exception e)
+                            {
+                                LOG.error("Some error happened when deleting Solr Document with ACLID {}. Error message: ", aclId,
+                                        e.getMessage());
+                                e.printStackTrace();
+                            }
+                        });
+                    }
                 }
 
             }

@@ -2,7 +2,7 @@ package org.alfresco.indexchecker;
 
 import org.alfresco.indexchecker.db.DbClient;
 import org.alfresco.indexchecker.solr.SolrWebClient;
-import org.alfresco.indexchecker.solr.bean.SearchResponse;
+import org.alfresco.indexchecker.solr.bean.response.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +32,10 @@ public class PermissionsValidator
     
     /**
      * Logs the number of permissions in Alfresco DB and SOLR.
-     * If detailed, logs the missing nodes in Alfresco DB or SOLR.
-     * @param detailed
+     * @param detailed, logs the missing permissions in Alfresco DB or SOLR.
+     * @param fix, apply fix actions to SOLR Index
      */
-    public void validate(boolean detailed) throws JsonMappingException, JsonProcessingException
+    public void validate(boolean detailed, boolean fix) throws JsonMappingException, JsonProcessingException
     {
         // Number of permissions indexed by SOLR
         SearchResponse solrAclCount = solrWebClient.getAclCount(SolrWebClient.ALFRESCO_CORE_NAME);
@@ -57,7 +57,7 @@ public class PermissionsValidator
             }
             if (detailed)
             {
-                permissionsCountComparator.logDetailedReport();    
+                permissionsCountComparator.detailedValidation(fix);    
             }
         }
     }

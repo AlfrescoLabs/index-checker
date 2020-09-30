@@ -34,6 +34,16 @@ When the property `report.detailed` in this properties file is set to `true`, a 
 report.detailed=true
 ```
 
+When the property `run.fix.actions` in this properties file is set to `true`, fixing actions are applied to SOLR Index:
+
+* DELETE documents (NODE or ACL) existing in SOLR but missing in DB
+* REINDEX nodes (NODE or ACL) existing in DB but missing in SOLR
+
+```
+run.fix.actions=true
+```
+
+
 ## Compiling
 
 Java 11 is required.

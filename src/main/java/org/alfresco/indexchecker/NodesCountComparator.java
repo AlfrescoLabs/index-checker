@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 import org.alfresco.indexchecker.db.DbClient;
 import org.alfresco.indexchecker.solr.SolrWebClient;
-import org.alfresco.indexchecker.solr.bean.Doc;
-import org.alfresco.indexchecker.solr.bean.SearchResponse;
+import org.alfresco.indexchecker.solr.bean.response.Doc;
+import org.alfresco.indexchecker.solr.bean.response.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +34,15 @@ public class NodesCountComparator
     
     /**
      * Logs details for the comparing process between SOLR and Alfresco DB 
+     * Apply fix actions to missing nodes if "fix" is set to true
      * 
      * @param alfrescoStoreId DB Id for Alfresco Store (for instance workspace://SpacesStore) 
      * @param type Complete name of a Content Model Type
      * @param uri Uri for the Content Model Type
      * @param localName Local name for the Content Model Type
+     * @param fix apply fix actions when "true"
      */
-    public void logDetailedReport(Integer alfrescoStoreId, String type, String uri, String localName)
+    public void detailedValidation(Integer alfrescoStoreId, String type, String uri, String localName, boolean fix)
     {
         // Max dbId in the database for selected Alfresco Store
         Integer dbIdMax = dbClient.getMaxDbId(alfrescoStoreId);
@@ -86,6 +88,25 @@ public class NodesCountComparator
                 if (missingDbIds.size() > 0)
                 {
                     LOG.error("TYPE {}: DbIds present in DB but missed in SOLR {}", type, missingDbIds);
+                    if (fix)
+                    {
+                        missingDbIds.parallelStream().forEach(nodeId -> {
+                            LOG.debug("TYPE {}: Reindexing document with DBID {} in Solr Index", type, nodeId);
+                            try
+                            {
+                                solrWebClient.reindexById(
+                                        SolrWebClient.ALFRESCO_CORE_NAME,
+                                        SolrWebClient.NODE_ID_PARAM_NAME,
+                                        nodeId);
+                            }
+                            catch (Exception e)
+                            {
+                                LOG.error("Some error happened when reindexing Solr Document with DBID {}. Error message: ", nodeId,
+                                        e.getMessage());
+                                e.printStackTrace();
+                            }
+                        });
+                    }
                 }
                 
                 List<Integer> missingSolrIds = solrIds.stream()
@@ -95,6 +116,25 @@ public class NodesCountComparator
                 if (missingSolrIds.size() > 0)
                 {
                     LOG.error("TYPE {}: DbIds present in SOLR but missed in DB {}", type, missingSolrIds);
+                    if (fix)
+                    {
+                        missingSolrIds.parallelStream().forEach(nodeId -> {
+                            LOG.debug("TYPE {}: Deleting document with DBID {} from Solr Index", type, nodeId);
+                            try
+                            {
+                                solrWebClient.deleteById(
+                                        SolrWebClient.ALFRESCO_CORE_NAME,
+                                        SolrWebClient.NODE_ID_FIELD_NAME, 
+                                        nodeId);
+                            }
+                            catch (Exception e)
+                            {
+                                LOG.error("Some error happened when deleting Solr Document with DBID {}. Error message: ", nodeId,
+                                        e.getMessage());
+                                e.printStackTrace();
+                            }
+                        });
+                    }
                 }
 
             }

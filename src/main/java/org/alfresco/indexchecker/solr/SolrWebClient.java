@@ -2,8 +2,12 @@ package org.alfresco.indexchecker.solr;
 
 import org.alfresco.indexchecker.NodesCountComparator;
 import org.alfresco.indexchecker.PermissionsCountComparator;
-import org.alfresco.indexchecker.solr.bean.FacetResponse;
-import org.alfresco.indexchecker.solr.bean.SearchResponse;
+import org.alfresco.indexchecker.solr.bean.request.Delete;
+import org.alfresco.indexchecker.solr.bean.request.DeleteRequest;
+import org.alfresco.indexchecker.solr.bean.response.ActionResponse;
+import org.alfresco.indexchecker.solr.bean.response.FacetResponse;
+import org.alfresco.indexchecker.solr.bean.response.SearchResponse;
+import org.alfresco.indexchecker.solr.bean.response.UpdateResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,6 +16,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import reactor.core.publisher.Mono;
 
 /**
  * Alfresco SOLR Client
@@ -107,5 +113,53 @@ public class SolrWebClient
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), SearchResponse.class);
     }
+    
+    public static final String NODE_ID_FIELD_NAME = "DBID";
+    public static final String ACL_ID_FIELD_NAME = "ACLID";
+    /**
+     * Delete a document from SOLR Index by type (NODE or ACL)
+     * @param core Core name: alfresco, archive
+     * @param fieldName Id Field Name: NODE_ID_FIELD_NAME or ACL_ID_FIELD_NAME
+     * @param id Number for the DBID or ACLID to be deleted
+     */
+    public UpdateResponse deleteById(String core, String fieldName, Integer id) throws JsonMappingException, JsonProcessingException
+    {
+        DeleteRequest deleteRequest = new DeleteRequest();
+        deleteRequest.delete = new Delete(fieldName + ":" + id);
+        
+        
+        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).post()
+                .uri(builder -> builder.path("/" + core + "/update")
+                        .queryParam("commit", "true")
+                        .build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(deleteRequest), DeleteRequest.class)
+                .accept(MediaType.APPLICATION_JSON).exchange()
+                .flatMap(res -> res.bodyToMono(String.class))
+                .block(), UpdateResponse.class);
+    }
+    
+    public static final String NODE_ID_PARAM_NAME = "nodeid";
+    public static final String ACL_ID_PARAM_NAME = "aclid";
+    /**
+     * Reindex a document in SOLR Index by type (NODE or ACL)
+     * @param core Core name: alfresco, archive
+     * @param paramName Param Name: NODE_ID_PARAM_NAME or ACL_ID_PARAM_NAME
+     * @param id Number for the DBID or ACLID to be reindexed
+     */
+    public ActionResponse reindexById(String core, String paramName, Integer id) throws JsonMappingException, JsonProcessingException
+    {
+        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).get()
+                .uri(builder -> builder.path("/admin/cores")
+                        .queryParam("core", core)
+                        .queryParam("action", "reindex")
+                        .queryParam(paramName, id)
+                        .queryParam("wt", "json")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON).exchange()
+                .flatMap(res -> res.bodyToMono(String.class))
+                .block(), ActionResponse.class);
+    }
+    
     
 }
