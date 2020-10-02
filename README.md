@@ -4,6 +4,8 @@ This is an *experimental* project to check the indexation coverage for an Alfres
 
 This project is not intended to be used in any *production* system (yet).
 
+The project has been designed with the "No Database Row Were Harmed in the Fixing of This Solr Index" principle.
+
 ## Configuring
 
 Alfresco JDBC and SOLR Endpoint can be configured in [src/main/resources/application.properties](src/main/resources/application.properties)
