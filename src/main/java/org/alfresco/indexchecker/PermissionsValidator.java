@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class PermissionsValidator
 {
     
-    static final Logger LOG = LoggerFactory.getLogger(App.class);
+    static final Logger LOG = LoggerFactory.getLogger(PermissionsValidator.class);
     
     @Autowired
     DbClient dbClient;
