@@ -1,7 +1,5 @@
 package org.alfresco.indexchecker.solr;
 
-import org.alfresco.indexchecker.NodesCountComparator;
-import org.alfresco.indexchecker.PermissionsCountComparator;
 import org.alfresco.indexchecker.solr.bean.request.Delete;
 import org.alfresco.indexchecker.solr.bean.request.DeleteRequest;
 import org.alfresco.indexchecker.solr.bean.response.ActionResponse;
@@ -31,6 +29,12 @@ public class SolrWebClient
 
     @Value("${solr.url}")
     String solrServerUrl;
+    
+    @Value("${validation.nodes.batch.size}")
+    Integer nodesBatchSize;
+    
+    @Value("${validation.permissions.batch.size}")
+    Integer permissionsBatchSize;
     
     /**
      * Get a count of SOLR Documents by TYPE using facet query
@@ -66,7 +70,7 @@ public class SolrWebClient
                 .uri(builder -> builder.path("/" + core + "/select")
                         .queryParam("q", "{query}")
                         .queryParam("start", minDbId)
-                        .queryParam("rows", NodesCountComparator.BATCH_SIZE)
+                        .queryParam("rows", nodesBatchSize)
                         .queryParam("sort", "DBID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=TYPE}" + type))
@@ -105,7 +109,7 @@ public class SolrWebClient
                         .queryParam("q", "{query}")
                         .queryParam("fl", "{cached}")
                         .queryParam("start", minAclId)
-                        .queryParam("rows", PermissionsCountComparator.BATCH_SIZE)
+                        .queryParam("rows", permissionsBatchSize)
                         .queryParam("sort", "ACLID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=DOC_TYPE}Acl", "[cached]ACLID, id, _version_"))

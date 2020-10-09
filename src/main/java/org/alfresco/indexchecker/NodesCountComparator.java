@@ -10,6 +10,7 @@ import org.alfresco.indexchecker.solr.bean.response.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,7 +25,8 @@ public class NodesCountComparator
     /**
      * Number of SOLR Documents taken on every request to be compared with DB
      */
-    public static final Integer BATCH_SIZE = 1000;
+    @Value("${validation.nodes.batch.size}")
+    Integer batchSize;
     
     @Autowired
     DbClient dbClient;
@@ -145,7 +147,7 @@ public class NodesCountComparator
                 e.printStackTrace();
                 break;
             }
-            currentBatchId = currentBatchId + BATCH_SIZE;
+            currentBatchId = currentBatchId + batchSize;
         }
     }
 
