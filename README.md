@@ -19,6 +19,8 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 
 # Alfresco SOLR endpoint
 solr.url=http://localhost:8983/solr
+# Add secret word only when using secret mode for SOLR
+solr.secret=secret
 ```
 
 This program validates the number of nodes and permissions in Alfresco Database and SOLR. Every validation can be enabled or disabled with the following properties (also available in [application.properties](src/main/resources/application.properties)):

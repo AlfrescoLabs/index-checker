@@ -26,9 +26,13 @@ public class SolrWebClient
 {
     
     public static final String ALFRESCO_CORE_NAME = "alfresco";
+    public static final String HTTP_HEADER_SECRET = "X-Alfresco-Search-Secret";
 
     @Value("${solr.url}")
     String solrServerUrl;
+
+    @Value("${solr.secret}")
+    String solrSecret;
     
     @Value("${validation.nodes.batch.size}")
     Integer nodesBatchSize;
@@ -44,13 +48,15 @@ public class SolrWebClient
     public FacetResponse getDocumentCountByType(String core) throws JsonMappingException, JsonProcessingException
     {
 
-        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).get()
+        return new ObjectMapper().readValue(WebClient.create(solrServerUrl)
+                .get()
                 .uri(builder -> builder.path("/" + core + "/select")
                         .queryParam("q", "*")
                         .queryParam("facet.field", "TYPE")
                         .queryParam("facet", "on")
                         .queryParam("wt", "json")
                         .build())
+                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), FacetResponse.class);
@@ -74,6 +80,7 @@ public class SolrWebClient
                         .queryParam("sort", "DBID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=TYPE}" + type))
+                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), SearchResponse.class);
@@ -91,6 +98,7 @@ public class SolrWebClient
                         .queryParam("q", "{query}")
                         .queryParam("wt", "json")
                         .build("{!term f=DOC_TYPE}Acl"))
+                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), SearchResponse.class);
@@ -113,6 +121,7 @@ public class SolrWebClient
                         .queryParam("sort", "ACLID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=DOC_TYPE}Acl", "[cached]ACLID, id, _version_"))
+                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), SearchResponse.class);
@@ -136,6 +145,7 @@ public class SolrWebClient
                 .uri(builder -> builder.path("/" + core + "/update")
                         .queryParam("commit", "true")
                         .build())
+                .header(HTTP_HEADER_SECRET, solrSecret)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(deleteRequest), DeleteRequest.class)
                 .accept(MediaType.APPLICATION_JSON).exchange()
@@ -160,6 +170,7 @@ public class SolrWebClient
                         .queryParam(paramName, id)
                         .queryParam("wt", "json")
                         .build())
+                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), ActionResponse.class);
