@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>org.alfresco</groupId>
 	<artifactId>index-checker</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>index-checker</name>
 	<description>Check SOLR Index coverage for Alfresco Repository Database</description>
 

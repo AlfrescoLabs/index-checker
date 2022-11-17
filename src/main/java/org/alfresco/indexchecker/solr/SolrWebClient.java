@@ -6,10 +6,10 @@ import org.alfresco.indexchecker.solr.bean.response.ActionResponse;
 import org.alfresco.indexchecker.solr.bean.response.FacetResponse;
 import org.alfresco.indexchecker.solr.bean.response.SearchResponse;
 import org.alfresco.indexchecker.solr.bean.response.UpdateResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -26,20 +26,19 @@ public class SolrWebClient
 {
     
     public static final String ALFRESCO_CORE_NAME = "alfresco";
-    public static final String HTTP_HEADER_SECRET = "X-Alfresco-Search-Secret";
 
     @Value("${solr.url}")
     String solrServerUrl;
 
-    @Value("${solr.secret}")
-    String solrSecret;
-    
     @Value("${validation.nodes.batch.size}")
     Integer nodesBatchSize;
     
     @Value("${validation.permissions.batch.size}")
     Integer permissionsBatchSize;
-    
+
+    @Autowired
+    SpringWebClient springWebClient;
+
     /**
      * Get a count of SOLR Documents by TYPE using facet query
      * @param core Core name: alfresco, archive
@@ -48,7 +47,7 @@ public class SolrWebClient
     public FacetResponse getDocumentCountByType(String core) throws JsonMappingException, JsonProcessingException
     {
 
-        return new ObjectMapper().readValue(WebClient.create(solrServerUrl)
+        return new ObjectMapper().readValue(springWebClient.getWebClient(solrServerUrl)
                 .get()
                 .uri(builder -> builder.path("/" + core + "/select")
                         .queryParam("q", "*")
@@ -56,7 +55,6 @@ public class SolrWebClient
                         .queryParam("facet", "on")
                         .queryParam("wt", "json")
                         .build())
-                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), FacetResponse.class);
@@ -72,7 +70,8 @@ public class SolrWebClient
      */
     public SearchResponse getDbIdRangeByType(String core, String type, Integer minDbId) throws JsonMappingException, JsonProcessingException
     {
-        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).get()
+        return new ObjectMapper().readValue(springWebClient.getWebClient(solrServerUrl)
+                .get()
                 .uri(builder -> builder.path("/" + core + "/select")
                         .queryParam("q", "{query}")
                         .queryParam("start", minDbId)
@@ -80,7 +79,6 @@ public class SolrWebClient
                         .queryParam("sort", "DBID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=TYPE}" + type))
-                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), SearchResponse.class);
@@ -93,12 +91,12 @@ public class SolrWebClient
      */
     public SearchResponse getAclCount(String core) throws JsonMappingException, JsonProcessingException
     {
-        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).get()
+        return new ObjectMapper().readValue(springWebClient.getWebClient(solrServerUrl)
+                .get()
                 .uri(builder -> builder.path("/" + core + "/select")
                         .queryParam("q", "{query}")
                         .queryParam("wt", "json")
                         .build("{!term f=DOC_TYPE}Acl"))
-                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), SearchResponse.class);
@@ -112,7 +110,8 @@ public class SolrWebClient
      */
     public SearchResponse getAclIdRange(String core, Integer minAclId) throws JsonMappingException, JsonProcessingException
     {
-        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).get()
+        return new ObjectMapper().readValue(springWebClient.getWebClient(solrServerUrl)
+                .get()
                 .uri(builder -> builder.path("/" + core + "/select")
                         .queryParam("q", "{query}")
                         .queryParam("fl", "{cached}")
@@ -121,7 +120,6 @@ public class SolrWebClient
                         .queryParam("sort", "ACLID asc")
                         .queryParam("wt", "json")
                         .build("{!term f=DOC_TYPE}Acl", "[cached]ACLID, id, _version_"))
-                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), SearchResponse.class);
@@ -141,11 +139,11 @@ public class SolrWebClient
         deleteRequest.delete = new Delete(fieldName + ":" + id);
         
         
-        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).post()
+        return new ObjectMapper().readValue(springWebClient.getWebClient(solrServerUrl)
+                .post()
                 .uri(builder -> builder.path("/" + core + "/update")
                         .queryParam("commit", "true")
                         .build())
-                .header(HTTP_HEADER_SECRET, solrSecret)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(Mono.just(deleteRequest), DeleteRequest.class)
                 .accept(MediaType.APPLICATION_JSON).exchange()
@@ -163,14 +161,14 @@ public class SolrWebClient
      */
     public ActionResponse reindexById(String core, String paramName, Integer id) throws JsonMappingException, JsonProcessingException
     {
-        return new ObjectMapper().readValue(WebClient.create(solrServerUrl).get()
+        return new ObjectMapper().readValue(springWebClient.getWebClient(solrServerUrl)
+                .get()
                 .uri(builder -> builder.path("/admin/cores")
                         .queryParam("core", core)
                         .queryParam("action", "reindex")
                         .queryParam(paramName, id)
                         .queryParam("wt", "json")
                         .build())
-                .header(HTTP_HEADER_SECRET, solrSecret)
                 .accept(MediaType.APPLICATION_JSON).exchange()
                 .flatMap(res -> res.bodyToMono(String.class))
                 .block(), ActionResponse.class);

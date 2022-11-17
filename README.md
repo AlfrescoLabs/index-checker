@@ -19,9 +19,32 @@ spring.datasource.driver-class-name=org.postgresql.Driver
 
 # Alfresco SOLR endpoint
 solr.url=http://localhost:8983/solr
-# Add secret word only when using secret mode for SOLR
+# Communication mode (NONE, HTTPS, SECRET)
+solr.comms=NONE
+```
+
+When using `SECRET` communication mode for SOLR, use following settings:
+
+```
+solr.comms=SECRET
+# Add secret word (only to be used for solr.comms=SECRET)
 solr.secret=secret
 ```
+
+When using `HTTPS` (mTLS) communication mode for SOLR, use following settings:
+
+```
+solr.comms=HTTPS
+# mTLS / HTTPS keystores (only to be used for solr.comms=HTTPS)
+solr.mtls.keystore.path=/opt/alfresco/keystores/ssl.keystore
+solr.mtls.keystore.type=JCEKS
+solr.mtls.keystore.pass=keystore
+solr.mtls.truststore.path=/opt/alfresco/keystores/ssl.truststore
+solr.mtls.truststore.type=JCEKS
+solr.mtls.truststore.pass=truststore
+```
+
+>> Use `ssl.keystore` and `ssl.truststore` files from your Alfresco Repository deployment and use also the same settings for `pass` and `type` properties
 
 This program validates the number of nodes and permissions in Alfresco Database and SOLR. Every validation can be enabled or disabled with the following properties (also available in [application.properties](src/main/resources/application.properties)):
 
@@ -46,7 +69,6 @@ When the property `run.fix.actions` in this properties file is set to `true`, fi
 ```
 run.fix.actions=true
 ```
-
 
 ## Compiling
 
