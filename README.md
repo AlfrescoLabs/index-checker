@@ -6,6 +6,8 @@ This project is not intended to be used in any *production* system (yet).
 
 The project has been designed with the "No Database Row Were Harmed in the Fixing of This Solr Index" principle.
 
+>> Additional resources to verify SOLR consistency against DB available in https://github.com/evasques/alfresco-search-services-inspector-script
+
 ## Configuring
 
 Alfresco JDBC and SOLR Endpoint can be configured in [src/main/resources/application.properties](src/main/resources/application.properties)
