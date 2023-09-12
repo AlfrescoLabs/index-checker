@@ -62,8 +62,7 @@ public class NodesCountComparator
                 List<Integer> solrIds = searchResponse.response.docs.stream().map(Doc::getDbid)
                         .collect(Collectors.toList());
 
-                if (solrIds.size() == 0)
-                {
+				if (solrIds != null && solrIds.size() == 0){
                     Integer maxDbId = dbClient.getMaxByType(alfrescoStoreId, uri, localName);
                     if (maxSolrDbId < maxDbId)
                     {

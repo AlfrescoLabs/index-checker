@@ -43,6 +43,46 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		
+		<!-- Logging support [Start] -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter</artifactId>
+		    <exclusions>
+		        <exclusion>
+		            <groupId>org.springframework.boot</groupId>
+		            <artifactId>spring-boot-starter-logging</artifactId>
+		        </exclusion>
+		    </exclusions>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-log4j2</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.logging.log4j</groupId>
+		    <artifactId>log4j-web</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+		</dependency>
+
+	    <!-- Log4j2 Supports Async loggers. These loggers provide a drastic improvement 
+			in performance compared to their synchronous counterparts. 
+			Async Loggers internally use a library called Disruptor for asynchronous logging. 
+			Set the system property to use Async logger: log4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector 
+			java -Dlog4j2.contextSelector=org.apache.logging.log4j.core.async.AsyncLoggerContextSelector -jar target/logging-log4j2-1.0.jar 
+		-->
+		<dependency>
+			<groupId>com.lmax</groupId>
+			<artifactId>disruptor</artifactId>
+			<version>3.4.2</version>
+		</dependency>
+		<!-- Logging support [End] -->
 	</dependencies>
 
 	<build>
