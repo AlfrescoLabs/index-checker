@@ -71,27 +71,26 @@ public class SpringWebClient
      * @param baseUrl Base URL for SOLR Server
      * @return Spring WebClient with applied configuration
      */
-    public WebClient getWebClient(String baseUrl) {
+	public WebClient getWebClient(String baseUrl) {
 
-        HttpClient httpClient = HttpClient.create(ConnectionProvider.create("web-client"));
+		HttpClient httpClient = HttpClient.create(ConnectionProvider.create("web-client"));
 
-        if (solrComms == CommMode.SECRET) {
-            httpClient = httpClient.headers(header -> {
-                header.add(HTTP_HEADER_SECRET, solrSecret);
-            });
-        }
-
-        if (solrComms == CommMode.HTTPS) {
-            httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(getMTLSContext()));
-        }
-
-        final Builder webClientBldr = WebClient.builder();	
-        if(solrComms == CommMode.NONE) {
-        	webClientBldr.defaultHeaders(header -> header.setBasicAuth(solrUser, solrPassword));
+		if (solrComms == CommMode.SECRET) {
+			httpClient = httpClient.headers(header -> {
+				header.add(HTTP_HEADER_SECRET, solrSecret);
+			});
 		}
-		return webClientBldr
-				.clientConnector(new ReactorClientHttpConnector(httpClient)).baseUrl(baseUrl).build();
-    }
+
+		if (solrComms == CommMode.HTTPS) {
+			httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(getMTLSContext()));
+		}
+
+		final Builder webClientBldr = WebClient.builder();
+		if (solrComms == CommMode.NONE) {
+			webClientBldr.defaultHeaders(header -> header.setBasicAuth(solrUser, solrPassword));
+		}
+		return webClientBldr.clientConnector(new ReactorClientHttpConnector(httpClient)).baseUrl(baseUrl).build();
+	}
 
     /**
      * Build SSLContext from keystores described in configuration
