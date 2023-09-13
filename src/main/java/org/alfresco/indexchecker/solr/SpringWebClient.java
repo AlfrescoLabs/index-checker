@@ -1,19 +1,22 @@
 package org.alfresco.indexchecker.solr;
 
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
+import java.io.FileInputStream;
+import java.security.KeyStore;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.Builder;
+
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.resources.ConnectionProvider;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
-import java.security.KeyStore;
 
 /**
  * Spring Web Client includes specific configuration for all different
@@ -38,6 +41,12 @@ public class SpringWebClient
 
     @Value("${solr.secret}")
     String solrSecret;
+    
+    @Value("${solr.user}")
+    String solrUser;
+    
+    @Value("${solr.password}")
+    String solrPassword;
 
     @Value("${solr.mtls.keystore.path}")
     String keyStorePath;
@@ -62,26 +71,26 @@ public class SpringWebClient
      * @param baseUrl Base URL for SOLR Server
      * @return Spring WebClient with applied configuration
      */
-    public WebClient getWebClient(String baseUrl) {
+	public WebClient getWebClient(String baseUrl) {
 
-        HttpClient httpClient = HttpClient.create(ConnectionProvider.create("web-client"));
+		HttpClient httpClient = HttpClient.create(ConnectionProvider.create("web-client"));
 
-        if (solrComms == CommMode.SECRET) {
-            httpClient = httpClient.headers(header -> {
-                header.add(HTTP_HEADER_SECRET, solrSecret);
-            });
-        }
+		if (solrComms == CommMode.SECRET) {
+			httpClient = httpClient.headers(header -> {
+				header.add(HTTP_HEADER_SECRET, solrSecret);
+			});
+		}
 
-        if (solrComms == CommMode.HTTPS) {
-            httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(getMTLSContext()));
-        }
+		if (solrComms == CommMode.HTTPS) {
+			httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(getMTLSContext()));
+		}
 
-        return WebClient
-                .builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(baseUrl)
-                .build();
-    }
+		final Builder webClientBldr = WebClient.builder();
+		if (solrComms == CommMode.NONE) {
+			webClientBldr.defaultHeaders(header -> header.setBasicAuth(solrUser, solrPassword));
+		}
+		return webClientBldr.clientConnector(new ReactorClientHttpConnector(httpClient)).baseUrl(baseUrl).build();
+	}
 
     /**
      * Build SSLContext from keystores described in configuration
